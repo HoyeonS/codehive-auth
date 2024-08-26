@@ -1,4 +1,4 @@
-package com.example.codehive_auth.service;
+package com.example.codehive_auth.rpcservice;
 
 import com.example.codehive_auth.AuthServiceGrpc;
 import com.example.codehive_auth.LoginRequest;

@@ -1,0 +1,28 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-codehive-auth-db
+    environment:
+      POSTGRES_DB: auth-db
+      POSTGRES_USER: codehive-auth
+      POSTGRES_PASSWORD: codehiveauth
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  springboot:
+    build: .
+    container_name: springboot-app-codehive-auth
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/auth-db
+      SPRING_DATASOURCE_USERNAME: codehive-auth
+      SPRING_DATASOURCE_PASSWORD: codehiveauth
+
+volumes:
+  pgdata:
