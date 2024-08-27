@@ -37,14 +37,28 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     @Override
     public void login(LoginRequest req, StreamObserver<LoginResponse> responseObserver) {
-        LoginResponse res = LoginResponse.newBuilder().setToken(req.getEmail()).build();
-        responseObserver.onNext(res);
-        responseObserver.onCompleted();
+
+        try{
+            String uid = credentialRepository.authorize(req.getEmail(), req.getPassword());
+
+            LoginResponse res = LoginResponse.newBuilder().setToken("TEMP").setUid(uid).setStatus("Success").build();
+
+
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        } catch (Exception e){
+
+            LoginResponse res = LoginResponse.newBuilder().setStatus("Failed").build();
+
+
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        }
     }
 
     @Override
     public void verifyToken(VerifyTokenRequest req, StreamObserver<VerifyTokenResponse> responseObserver) {
-        VerifyTokenResponse res = VerifyTokenResponse.newBuilder().setStatus(req.getToken()).build();
+        VerifyTokenResponse res = VerifyTokenResponse.newBuilder().setStatus("Success").build();
         responseObserver.onNext(res);
         responseObserver.onCompleted();
     }
