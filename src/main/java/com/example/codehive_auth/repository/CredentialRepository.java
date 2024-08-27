@@ -11,4 +11,6 @@ public interface CredentialRepository extends JpaRepository<Credential, Long> {
     @Query("SELECT c.uid FROM Credential c WHERE c.email = :email AND c.password = :password")
     @Nullable
     String authorize(@Param("email") String email, @Param("password") String password);
+
+    
 }

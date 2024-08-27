@@ -11,14 +11,28 @@ import com.example.codehive_auth.VerifyTokenResponse;
 import io.grpc.stub.StreamObserver;
 import net.devh.boot.grpc.server.service.GrpcService;
 
+import com.example.codehive_auth.repository.CredentialRepository;
+import com.example.codehive_auth.entity.Credential;
+
 @GrpcService
 public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
+    CredentialRepository credentialRepository;
     @Override
     public void register(RegisterRequest req, StreamObserver<RegisterResponse> responseObserver) {
-        RegisterResponse res = RegisterResponse.newBuilder().setToken(req.getEmail()).build();
-        responseObserver.onNext(res);
-        responseObserver.onCompleted();
+        try{
+            Credential credential = new Credential(req.getEmail(), req.getPassword(), req.getUid());
+
+            credentialRepository.save(credential);
+
+            RegisterResponse res = RegisterResponse.newBuilder().setToken("TEMP").setUid(req.getUid()).setStatus("Success").build();
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        } catch (Exception e) {
+            RegisterResponse res = RegisterResponse.newBuilder().setStatus("Failed").build();
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        }
     }
 
     @Override
