@@ -14,22 +14,32 @@ import net.devh.boot.grpc.server.service.GrpcService;
 import com.example.codehive_auth.repository.CredentialRepository;
 import com.example.codehive_auth.entity.Credential;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 @GrpcService
 public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
-    CredentialRepository credentialRepository;
+    @Autowired
+    private CredentialRepository credentialRepository;
+
     @Override
     public void register(RegisterRequest req, StreamObserver<RegisterResponse> responseObserver) {
-        try{
+        try {
             Credential credential = new Credential(req.getEmail(), req.getPassword(), req.getUid());
-
             credentialRepository.save(credential);
 
-            RegisterResponse res = RegisterResponse.newBuilder().setToken("TEMP").setUid(req.getUid()).setStatus("Success").build();
+            RegisterResponse res = RegisterResponse.newBuilder()
+                .setToken("TEMP")
+                .setUid(req.getUid())
+                .setStatus("Success")
+                .build();
             responseObserver.onNext(res);
             responseObserver.onCompleted();
         } catch (Exception e) {
-            RegisterResponse res = RegisterResponse.newBuilder().setStatus("Failed").build();
+            RegisterResponse res = RegisterResponse.newBuilder()
+                .setStatus("Failed: " + e.getMessage())
+                .build();
             responseObserver.onNext(res);
             responseObserver.onCompleted();
         }
@@ -37,20 +47,20 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     @Override
     public void login(LoginRequest req, StreamObserver<LoginResponse> responseObserver) {
-
-        try{
+        try {
             String uid = credentialRepository.authorize(req.getEmail(), req.getPassword());
 
-            LoginResponse res = LoginResponse.newBuilder().setToken("TEMP").setUid(uid).setStatus("Success").build();
-
-
+            LoginResponse res = LoginResponse.newBuilder()
+                .setToken("TEMP")
+                .setUid(uid)
+                .setStatus("Success")
+                .build();
             responseObserver.onNext(res);
             responseObserver.onCompleted();
-        } catch (Exception e){
-
-            LoginResponse res = LoginResponse.newBuilder().setStatus("Failed").build();
-
-
+        } catch (Exception e) {
+            LoginResponse res = LoginResponse.newBuilder()
+                .setStatus("Failed: " + e.getMessage())
+                .build();
             responseObserver.onNext(res);
             responseObserver.onCompleted();
         }
@@ -58,7 +68,9 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     @Override
     public void verifyToken(VerifyTokenRequest req, StreamObserver<VerifyTokenResponse> responseObserver) {
-        VerifyTokenResponse res = VerifyTokenResponse.newBuilder().setStatus("Success").build();
+        VerifyTokenResponse res = VerifyTokenResponse.newBuilder()
+            .setStatus("Success")
+            .build();
         responseObserver.onNext(res);
         responseObserver.onCompleted();
     }
