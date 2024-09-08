@@ -17,6 +17,8 @@ import com.example.codehive_auth.entity.Credential;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.codehive_auth.utils.JwtUtil;
+
 @GrpcService
 public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
@@ -26,11 +28,12 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
     @Override
     public void register(RegisterRequest req, StreamObserver<RegisterResponse> responseObserver) {
         try {
+            String token = JwtUtil.generateToken(req.getUid());
             Credential credential = new Credential(req.getEmail(), req.getPassword(), req.getUid());
             credentialRepository.save(credential);
 
             RegisterResponse res = RegisterResponse.newBuilder()
-                .setToken("TEMP")
+                .setToken(token)
                 .setUid(req.getUid())
                 .setStatus("Success")
                 .build();
@@ -48,10 +51,12 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
     @Override
     public void login(LoginRequest req, StreamObserver<LoginResponse> responseObserver) {
         try {
+            
             String uid = credentialRepository.authorize(req.getEmail(), req.getPassword());
+            String token = JwtUtil.generateToken(uid);
 
             LoginResponse res = LoginResponse.newBuilder()
-                .setToken("TEMP")
+                .setToken(token)
                 .setUid(uid)
                 .setStatus("Success")
                 .build();
@@ -68,10 +73,27 @@ public class AuthServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
     @Override
     public void verifyToken(VerifyTokenRequest req, StreamObserver<VerifyTokenResponse> responseObserver) {
-        VerifyTokenResponse res = VerifyTokenResponse.newBuilder()
+        try{
+        String verifiedId = JwtUtil.extractUID(req.getToken());
+        if(verifiedId.equals(req.getUid())){
+                    VerifyTokenResponse res = VerifyTokenResponse.newBuilder()
             .setStatus("Success")
             .build();
-        responseObserver.onNext(res);
-        responseObserver.onCompleted();
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        } else {
+            VerifyTokenResponse res = VerifyTokenResponse.newBuilder()
+                .setStatus("Failed")
+                .build();
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        }
+        }catch (Exception e) {
+           VerifyTokenResponse res = VerifyTokenResponse.newBuilder()
+                .setStatus("Failed: " + e.getMessage())
+                .build();
+            responseObserver.onNext(res);
+            responseObserver.onCompleted();
+        }
     }
 }

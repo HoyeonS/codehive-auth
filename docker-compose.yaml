@@ -21,10 +21,13 @@ services:
         - "9090:9090"
     depends_on:
       - postgres
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth-db
       SPRING_DATASOURCE_USERNAME: codehive-auth
       SPRING_DATASOURCE_PASSWORD: codehiveauth
+      
 
 volumes:
   pgdata:
